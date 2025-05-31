@@ -2,37 +2,128 @@
 @plugin "@tailwindcss/typography";
 
 :root {
+  /* 基础颜色 */
   --background: #ffffff;
   --foreground: #171717;
+  --muted: #6b7280;
+  --muted-foreground: #9ca3af;
+  --border: #e5e7eb;
+  --card: #ffffff;
+  --card-foreground: #171717;
+
+  /* 主要颜色 */
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --accent: #f8fafc;
+  --accent-foreground: #0f172a;
+
+  /* 语义化颜色 */
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --header-border: #e5e7eb;
+  --link: #1d4ed8;
+  --link-hover: #1e40af;
+  --text-muted: #6b7280;
+  --text-secondary: #374151;
+
+  /* 按钮颜色 */
+  --button-bg: #f3f4f6;
+  --button-bg-hover: #e5e7eb;
+  --button-text: #374151;
+}
+
+.dark {
+  /* 基础颜色 */
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --muted: #6b7280;
+  --muted-foreground: #9ca3af;
+  --border: #374151;
+  --card: #1f2937;
+  --card-foreground: #f9fafb;
+
+  /* 主要颜色 */
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+
+  /* 语义化颜色 */
+  --header-bg: rgba(3, 7, 18, 0.8);
+  --header-border: #374151;
+  --link: #60a5fa;
+  --link-hover: #93c5fd;
+  --text-muted: #9ca3af;
+  --text-secondary: #d1d5db;
+
+  /* 按钮颜色 */
+  --button-bg: #374151;
+  --button-bg-hover: #4b5563;
+  --button-text: #d1d5db;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-header-bg: var(--header-bg);
+  --color-header-border: var(--header-border);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-text-muted: var(--text-muted);
+  --color-text-secondary: var(--text-secondary);
+  --color-button-bg: var(--button-bg);
+  --color-button-bg-hover: var(--button-bg-hover);
+  --color-button-text: var(--button-text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* 系统主题回退 */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light) {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --border: #374151;
+    --card: #1f2937;
+    --card-foreground: #f9fafb;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
 }
 
 /* 代码高亮样式 */
 .hljs {
   display: block;
   overflow-x: auto;
-  padding: 1em;
+  padding: 1.5em;
+  background: #f8f9fa;
+  color: #24292e;
+  border-radius: 0.5rem;
+  border: 1px solid #e1e4e8;
+}
+
+.dark .hljs {
   background: #1e1e1e;
   color: #d4d4d4;
+  border-color: #30363d;
 }
 
 .hljs-keyword,
@@ -74,4 +165,70 @@ body {
 .hljs-built_in,
 .hljs-builtin-name {
   color: #4ec9b0;
+}
+
+/* 额外的暗黑模式优化 */
+.dark {
+  color-scheme: dark;
+}
+
+/* 滚动条样式优化 */
+/* 浅色模式滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* 深色模式滚动条 */
+.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1f2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+  border-radius: 4px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+/* 选择文本的颜色优化 */
+/* 浅色模式文本选择 */
+::selection {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+/* 深色模式文本选择 */
+.dark ::selection {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+/* 图片在暗黑模式下的优化 */
+.dark img {
+  opacity: 0.9;
+}
+
+.dark img:hover {
+  opacity: 1;
 }
