@@ -1,639 +1,142 @@
 ---
-title: 使用 Next.js App Router 常犯的 10 个错误
-date: 2024-05-01
+title: React 简介与组件开发指南
+date: 2024-06-01
 ---
 
-## 前言
 
-最近我看了 Vercel 的产品 VP Lee Robinson 的 Youtube 视频，作为一名前端开发工程师，他分享了很多 Next.js 相关的课程视频，其中就有一条他总结的《Next.js App Router 常犯的 10 个错误》的[视频](https://www.youtube.com/watch?v=RBM03RihZVs\&ab_channel=Vercel)，我觉得非常有意义，所以记录下了这 10 个常犯错误的内容，从我自己的角度为大家介绍下这 10 个错误。
+# React 简介与组件开发指南
 
-现在就让我们开始吧！顺便看看你有没有中招。
+## 🧠 什么是 React？
 
-## 项目准备
+React 是一个用于构建用户界面的 JavaScript 库，由 Facebook 维护。它采用组件化开发方式，使 UI 更加可复用和易维护。
 
-使用官方脚手架，创建一个 Next.js 项目：
+- 官方网站：[https://reactjs.org](https://reactjs.org)
+- 核心特点：
+  - 声明式编程
+  - 组件化
+  - 虚拟 DOM
+  - 单向数据流
+
+---
+
+## ⚙️ 环境准备
+
+安装 Node.js（推荐 LTS 版本），然后使用以下命令创建一个 React 项目：
 
 ```bash
-npx create-next-app@latest
+npx create-react-app my-app
+cd my-app
+npm start
 ```
 
-运行效果如下：
+---
 
-![image.png](/test.jpg)
+## 📦 React 组件基础
 
-## 错误 1：服务端组件调用路由处理程序
+React 组件有两种：
 
-新建 `app/mistake1/page.js`，代码如下：
-
-```javascript
-export default async function Page() {
-  const data = await (await fetch('http://localhost:3000/api/hello')).json()
-  return (
-    <ul>{data?.data.map(({title}, index) => {
-      return <li key={index}>{title}</li>
-    })}</ul>
-  )
-}
-```
-
-新建 `app/api/hello/route.js`，代码如下：
-
-```javascript
-export async function GET() {
-  const res = await fetch('https://jsonplaceholder.typicode.com/posts')
-  const data = await res.json()
-  
-  return Response.json({ data })
-}
-```
-
-![image.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/9e0861d9737643c1ace67120830fe307~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=3798\&h=622\&s=250159\&e=png\&b=1f1f1f)
-
-这就是传统的应用实现方式，前后端分离，在前端页面调用后端的接口实现前后端的交互。但会有 2 个问题：
-
-1.  API 地址硬编码，比如现在获取的是 `localhost:3000`，上线的时候还要设置线上地址
-2.  其实没有必要创建一个多余的 GET 路由处理程序，服务端组件直接运行在服务端，可以直接在服务端组件中获取后端资源
-
-我们可以直接修改 `app/mistake1/page.js`，代码如下：
+### 1. 函数组件（Function Component）
 
 ```jsx
-export default async function Page() {
-  const data = await (await fetch('https://jsonplaceholder.typicode.com/posts')).json()
-  return (
-    <ul>{data.map(({title}, index) => {
-      return <li key={index}>{title}</li>
-    })}</ul>
-  )
+function Welcome(props) {
+  return <h1>Hello, {props.name}!</h1>;
 }
 ```
 
-效果是一样的：
+### 2. 类组件（Class Component）
 
-![image.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4d17b11342a546f2a6361fddbcfe64ca~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=2290\&h=904\&s=184043\&e=png\&b=ffffff)
+```jsx
+import React, { Component } from 'react';
 
-## 错误 2：路由处理程序的静态处理
-
-新建 `app/api/time/route.js`，代码如下：
-
-```javascript
-export async function GET() {
-  console.log('GET /api/time')
-  return Response.json({ data: new Date().toLocaleTimeString() })
-}
-```
-
-在开发模式下，每次刷新时间都会改变：
-
-![image.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4b04d591d7b04e42a16119bd4ba006ad~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=521\&h=144\&s=12389\&e=png\&b=fdfdfd)
-
-现在我们部署生产版本，运行 `npm run build && npm run start`：
-
-![](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/114035e161cb479b9aa4e12cc036ba94~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=521\&h=144\&s=16832\&e=gif\&f=23\&b=fefefe#id=DLmpL\&originalType=binary\&ratio=1\&rotation=0\&showTitle=false\&status=done\&style=none\&title=)![image.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/63c0f90e1353418297a38aa14fcf14c5~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=521\&h=144\&s=12425\&e=png\&b=fdfdfd)
-
-你会发现，无论怎么刷新，时间都不会改变。这就是被缓存了，又或者说，被静态处理了。
-
-这里哪怕我们不获取时间，而是改为 fetch 外部的接口，亦或者调用后端资源进行处理，都有可能会被静态处理。
-
-这是 Next.js 的自动行为，因为 Next.js 认为并不是每次 GET 请求都要重新计算，所以干脆处理成静态数据提升性能。
-
-路由处理程序的行为其实和页面的行为是一致的，如果你希望更改这种行为，那么添加一些动态化的操作即可将其转为动态处理。就比如使用 cookies()、headers() 函数：
-
-```javascript
-export async function GET(request) {
-  const token = request.cookies.get('token')
-  return Response.json({ data: new Date().toLocaleTimeString() })
-}
-```
-
-这是因为 cookies、headers 这种数据，只能在每次具体请求的时候才能知道，所以 Next.js 会按照正常的 API 进行处理。
-
-当你添加其他的 HTTP 方法比如 POST 方法的时候也会将其转为动态处理：
-
-```javascript
-export async function GET() {
-  console.log('GET /api/time')
-  return Response.json({ data: new Date().toLocaleTimeString() })
-}
-
-export async function POST() {
-  console.log('POST /api/time')
-  return Response.json({ data: new Date().toLocaleTimeString() })
-}
-```
-
-这是因为 POST 请求往往用于改变数据，GET 请求用于获取数据。如果写了 POST 请求，表示数据会发生变化，此时不适合缓存。
-
-所以\*\*简单的来说就是，当你在路由处理程序中只写了一个 GET 请求又没有任何动态化的操作时，有可能会在生产环境的时候转为静态处理。\*\*注意这个行为即可。
-
-具体还有哪些行为会导致动态处理，可以参考[《路由篇 | 路由处理程序》](https://juejin.cn/book/7307859898316881957/section/7308914343129645065)。
-
-## 错误 3：路由处理程序与客户端组件
-
-如果说，服务端组件调用路由处理程序是一种“错误”，你可能以为，那就只能在客户端组件中调用路由处理程序。
-
-这还是一种错误。
-
-新建 `app/mistakes3/page.js`，代码如下：
-
-```javascript
-'use client'
-
-import { useState } from 'react';
-export default function Page() {
-
-  const [list, setList] = useState([]);
-
-  return (
-    <>
-      <ul>
-        {list.map(({ title, id }) => {
-          return <li key={id}>{title}</li>
-        })}
-      </ul>
-      <button onClick={async () => {
-        const data = await (await fetch('http://localhost:3000/api/hello')).json()
-        setList(data.data)
-      }}>添加数据</button>
-    </>
-  )
-}
-```
-
-这里我们将页面整个声明为客户端组件，调用了路由处理程序。依然是有 2 个问题：
-
-1.  API 地址硬编码，比如现在获取的是 `localhost:3000`，上线的时候还要设置线上地址
-2.  其实没有必要创建一个多余的 GET 路由处理程序，客户端组件也可以直接调用后端资源，这就是 [Server Actions](https://juejin.cn/book/7307859898316881957/section/7309076949203484722#heading-10)
-
-所以这段代码可以直接改为：
-
-```javascript
-'use client'
-
-import { useState } from 'react';
-import { fetchPosts } from './actions';
-export default function Page() {
-
-  const [list, setList] = useState([]);
-
-  return (
-    <>
-      <ul>
-        {list.map(({ title, id }) => {
-          return <li key={id}>{title}</li>
-        })}
-      </ul>
-      <button onClick={async () => {
-        const data = await fetchPosts()
-        setList(data)
-      }}>添加数据</button>
-    </>
-  )
-}
-```
-
-新建 `app/mistakes3/actions.js`，代码如下：
-
-```javascript
-"use server"
-
-export async function fetchPosts(value) {
-  const data = await (await fetch('https://jsonplaceholder.typicode.com/posts')).json()
-  return data
-}
-```
-
-效果是一样的：
-
-![react-1.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/3b9fe5c8b3e14fd485d66b01c306ecb4~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=910\&h=314\&s=28482\&e=gif\&f=15\&b=fefefe)
-
-**简单总结就是：当你开发的路由处理程序只是给自己的前台界面调用的时候，那就没有必要写这个路由处理程序。如果是服务端组件，直接调用。如果是客户端组件，使用 Server Actions。**
-
-## 错误 4：Suspense 组件的正确位置
-
-新建 `app/mistake4/page.js`，代码如下：
-
-```javascript
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-
-async function Posts() {
-  const data = await (await fetch('https://jsonplaceholder.typicode.com/posts')).json()
-  await sleep(2000)
-  return (
-    <ul>{data?.map(({title}, index) => {
-      return <li key={index}>{title}</li>
-    })}</ul>
-  )
-}
-export default async function Page() {
-  return (
-    <>
-      <h1>Articles List</h1>
-      <Posts />
-    </>
-  )
-}
-```
-
-交互效果如下：
-
-![react-2.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ff27580951ff4498b1bf18c8e1249566~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=990\&h=413\&s=148957\&e=gif\&f=29\&b=fdfdfd)
-
-因为我们特地添加了 sleep 函数，所以在地址栏输入地址后，2s 后页面才开始加载处理。
-
-为了提升这个体验，Next.js 会推荐使用 Suspense 组件。但尴尬的是，如果你对 Suspense 不熟，很可能会写成这样：
-
-```javascript
-import { Suspense } from "react";
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-async function Posts() {
-  const data = await (await fetch('https://jsonplaceholder.typicode.com/posts')).json()
-  await sleep(2000)
-  return (
-    <Suspense fallback={'loading'}>
-      <ul>{data?.map(({title}, index) => {
-      return <li key={index}>{title}</li>
-      })}</ul>
-    </Suspense>
-  )
-}
-export default async function Page() {
-  return (
-    <>
-      <h1>Articles List</h1>
-      <Posts />
-    </>
-  )
-}
-```
-
-不知道你写 Suspense 的时候遇到过这个错误不？我还真的这样写错过……其实应该这样写：
-
-```javascript
-import { Suspense } from "react";
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-async function Posts() {
-  const data = await (await fetch('https://jsonplaceholder.typicode.com/posts')).json()
-  await sleep(2000)
-  return (
-      <ul>{data?.map(({title}, index) => {
-      return <li key={index}>{title}</li>
-      })}</ul>
-  )
-}
-export default async function Page() {
-  return (
-    <>
-      <h1>Articles List</h1>
-      <Suspense fallback={'loading'}>
-        <Posts />
-      </Suspense>
-    </>
-  )
-}
-```
-
-新的交互效果如下：
-
-![react-3.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/ff9ae151d07d459c9b528b6a00a7f2b9~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=990\&h=413\&s=140275\&e=gif\&f=35\&b=fdfdfd)
-
-页面立刻就加载进来，然后 2s 后数据出现。
-
-## 错误 5：处理传入的请求
-
-第五个错误是关于如何处理传入的请求。Next.js 提供了一些内置的 API 帮助你获取信息。
-
-比如如果你要获取 cookies 信息，你可以使用  next/headers：
-
-```javascript
-import { cookies } from 'next/headers'
- 
-export default function Page() {
-  const cookieStore = cookies()
-  const theme = cookieStore.get('theme')
-  return '...'
-}
-```
-
-如果你要获取 headers 信息，你可以使用 next/headers：
-
-```javascript
-import { headers } from 'next/headers'
- 
-export default function Page() {
-  const headersList = headers()
-  const referer = headersList.get('referer')
- 
-  return <div>Referer: {referer}</div>
-}
-```
-
-如果你要获取搜索参数，直接提供了函数参数：
-
-```javascript
-export default function Page({ params, searchParams }) {
-  return <h1>My Page</h1>
-}
-```
-
-为了演示这些 API 的效果，新建 `/app/mistake5/[id]/page.js`，代码如下：
-
-```javascript
-import { cookies, headers } from 'next/headers'
-export default function Page({ params, searchParams }) {
-  const cookieStore = cookies()
-  const headersList = headers()
-  return (
-    <>
-      <h1>My Page</h1>
-      <h2>params</h2>
-      <div>{JSON.stringify(params, null, 2)}</div>
-      <h2>searchParams</h2>
-      <div>{JSON.stringify(searchParams, null, 2)}</div>
-      <h2>cookies</h2>
-      <div>{JSON.stringify(cookieStore, null, 2)}</div>
-      <h2>headers</h2>
-      <div>{JSON.stringify(headersList, null, 2)}</div>
-    </>
-  )
-}
-```
-
-效果如下：
-
-![image.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/06bdda65025f49cb8676f90f6d04265b~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=2338\&h=1802\&s=501302\&e=png\&b=fefefe)
-
-## 错误 6：使用 Context Providers
-
-在 Next.js 中怎么是用 Context 呢？因为使用 Context 需要先声明为客户端组件，如果你一不小心，可能会让整个页面都转为客户端组件，进而失去服务端渲染的优势。
-
-新建 `app/mistake6/page.js`，代码如下：
-
-```javascript
-'use client'
- 
-import { createContext, useContext } from 'react'
-import dayjs from "dayjs";
-
-export const ThemeContext = createContext('light')
-
-function Button() {
-  var now = dayjs().format('DD/MM/YYYY')
-  const theme = useContext(ThemeContext);
-  return <button>{ now } { theme }</button>;
-}
-
-export default function Page() {
-  return (
-    <ThemeContext.Provider value="dark">
-      <Button />
-    </ThemeContext.Provider>
-  )
-}
-```
-
-这样做，就将整个页面都声明为了客户端组件，查看页面 bundle，将 dayjs 也打包到了客户端 bundle 中。
-
-![截屏2024-04-23 16.36.54.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/eafd543ac7d94e47a2c0066f5189a2f1~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=1780\&h=1054\&s=208033\&e=png\&b=fcfbfb)
-
-Next.js 推荐的做法是放在根布局中
-
-修改 `app/layout.js`，代码如下：
-
-```javascript
-import ThemeProvider from './provider'
- 
-export default function RootLayout({ children }) {
-  return (
-    <html>
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
-    </html>
-  )
-}
-```
-
-新建 `app/provider.js`，代码如下：
-
-```javascript
-'use client'
- 
-import { createContext } from 'react'
- 
-export const ThemeContext = createContext({})
- 
-export default function ThemeProvider({ children }) {
-  return <ThemeContext.Provider value="dark">{children}</ThemeContext.Provider>
-}
-```
-
-这样 `app/layout`就还是服务端组件。当你在具体的页面中使用 Context 的时候：
-
-新建 `app/correct6/page.js`，代码如下：
-
-```javascript
-import dayjs from "dayjs";
-import Button from './button';
-function Time() {
-  var now = dayjs().format('DD/MM/YYYY')
-  return <div>{ now }</div>;
-}
-export default function Page() {
-  return (
-    <>
-      <Time />
-      <Button />
-    </>
-  )
-}
-```
-
-新建 `app/correct6/button.js`，代码如下：
-
-```javascript
-'use client'
-
-import { useContext } from 'react';
-import { ThemeContext } from "../provider"
-function Button() {
-  const theme = useContext(ThemeContext);
-  return <button>{ theme }</button>;
-}
-
-export default Button
-```
-
-效果如下：
-
-![image.png](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/586d0f8beeaa4bf68851ca2b1f3eb992~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=1494\&h=1058\&s=174505\&e=png\&b=fcfbfb)
-
-因为 dayjs 用在了服务端组件，所以不会打包到客户端 bundle 中
-
-## 错误 7：不必要的 "use client"
-
-在 Next.js 中，我们使用 `"use client"`声明为客户端组件，那么问题来了，如果父组件已经声明为客户端组件，子组件还需要再次声明吗？
-
-答案是不用。其实 "use client" 声明的是客户端组件与服务端组件的边界，正常导入的情况下，客户端组件下的所有组件都会是客户端组件，也就意味着所有代码都会打包到客户端 bundle 中。
-
-## 错误 8：当客户端组件与服务端组件一起使用
-
-除非你使用 props 的形式将服务端组件传入客户端组件，比如这种：
-
-```javascript
-import ClientComponent from './client-component'
-import ServerComponent from './server-component'
- 
-export default function Page() {
-  return (
-    <ClientComponent>
-      <ServerComponent />
-    </ClientComponent>
-  )
-}
-```
-
-客户端组件代码为：
-
-```javascript
-'use client'
- 
-import { useState } from 'react'
- 
-export default function ClientComponent({ children }) {
-  const [count, setCount] = useState(0)
- 
-  return (
-    <>
-      <button onClick={() => setCount(count + 1)}>{count}</button>
-      {children}
-    </>
-  )
-}
-```
-
-为什么直接导入就会被视为客户端组件，而使用 props 的形式就可以呢？
-
-这是因为通过 props 的形式，组件还是在服务端渲染，只是将服务端渲染的结果传给客户端组件而已。
-
-## 错误 9：数据更新后没有重新验证
-
-新建 `app/mistake9/page.js`，代码如下：
-
-```javascript
-import { findToDos, createToDo } from './actions';
-
-export default async function Page() {
-  const todos = await findToDos();
-  return (
-    <>
-      <form action={createToDo}>
-        <input type="text" name="todo" />
-        <button type="submit">Submit</button>
-      </form>
-      <ul>
-        {todos.map((todo, i) => <li key={i}>{todo}</li>)}
-      </ul>
-    </>
-  )
-}
-```
-
-新建 `app/mistake9/actions.js`，代码如下：
-
-```javascript
-'use server'
-
-import { revalidatePath } from "next/cache";
-
-const data = ['阅读', '写作', '冥想']
- 
-export async function findToDos() {
-  return data
-}
-
-export async function createToDo(formData) {
-  const todo = formData.get('todo')
-  data.push(todo)
-  // revalidatePath("/mistake9");
-  return data
-}
-```
-
-这里我们实现了一个简易的 Server Actions 提交，交互效果如下：
-
-![react-4.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d10b9cc179004c15b95e7d33afc8869c~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=1310\&h=449\&s=167765\&e=gif\&f=26\&b=fcfcfc)
-
-我们提交了数据，接口也是返回 200 成功状态，但是数据并没有更新，刷新页面，数据才更新。
-
-此时我们取消注释，再看下交互效果：
-
-![react-5.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a85a9f513f14448186e1ab1f5860a6e7~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=1310\&h=449\&s=147353\&e=gif\&f=25\&b=fcfcfc)
-
-## 错误 10：在 try/catch 中 redirect
-
-以错误 9 的代码为例，假设我们修改 `actions.js` 的代码为：
-
-```javascript
-'use server'
-
-import { revalidatePath } from "next/cache";
-import { redirect } from 'next/navigation'
-
-const data = ['阅读', '写作', '冥想']
- 
-export async function findToDos() {
-  return data
-}
-
-export async function createToDo(formData) {
-  try {
-    const todo = formData.get('todo')
-    data.push(todo)
-    revalidatePath("/mistake9");
-    redirect('/')
-    return data
-  } catch(e) {
-    return {message: 'error'}
+class Welcome extends Component {
+  render() {
+    return <h1>Hello, {this.props.name}!</h1>;
   }
 }
 ```
 
-数据重新验证后，我们调用 redirect 希望页面重定向到 `/`。
+---
 
-但这是没有效果的！因为 redirect 的内部实现是通过抛出一个固定的错误来处理的，所以如果你在 try/catch 中使用就会失效。建议是在之后或者 finally 中使用，比如：
+## 🧩 JSX 简介
 
-```javascript
-'use server'
+JSX 是 JavaScript 的一种语法扩展，看起来像 HTML：
 
-import { revalidatePath } from "next/cache";
-import { redirect } from 'next/navigation'
+```jsx
+const element = <h1>Hello, world!</h1>;
+```
 
-const data = ['阅读', '写作', '冥想']
- 
-export async function findToDos() {
-  return data
-}
+> 注意：JSX 最终会被编译为 `React.createElement(...)`
 
-export async function createToDo(formData) {
-  try {
-    const todo = formData.get('todo')
-    data.push(todo)
-    revalidatePath("/mistake9");
-    return data
-  } catch(e) {
-    return {message: 'error'}
-  } finally {
-    redirect('/')
-  }
+---
+
+## 🪝 使用 React Hooks（仅限函数组件）
+
+### useState 示例：
+
+```jsx
+import { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  return (
+    <div>
+      <p>当前计数：{count}</p>
+      <button onClick={() => setCount(count + 1)}>增加</button>
+    </div>
+  );
 }
 ```
 
-这样就是有效果的，效果如下：
+### useEffect 示例：
 
-![react-6.gif](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/4bfb3203e33a43fe8d12cd19eb7b723c~tplv-k3u1fbpfcp-jj-mark:0:0:0:0:q75.image#?w=1310\&h=449\&s=167080\&e=gif\&f=22\&b=fcfbfc)
+```jsx
+import { useEffect } from 'react';
 
-## 总结
+useEffect(() => {
+  console.log('组件已挂载');
+  return () => {
+    console.log('组件将卸载');
+  };
+}, []);
+```
 
-本篇我们总结了 Next.js 常犯的 10 个错误，提前预习这些错误，防止大家遇到这些问题的时候被卡住。
+---
 
-PS：学习 Next.js，欢迎入手小册[《Next.js 开发指南》](https://s.juejin.cn/ds/iFkbaMgM/)。基础篇、实战篇、源码篇、面试篇四大篇章带你系统掌握 Next.js！
+## 🧱 Props 与 State 区别
+
+| 特性   | Props                    | State                    |
+|--------|--------------------------|--------------------------|
+| 读写性 | 只读                     | 可读写                   |
+| 来源   | 由父组件传入             | 组件内部初始化或更新     |
+| 用途   | 通信、配置               | 控制组件行为、交互       |
+
+---
+
+## 📁 项目结构建议
+
+```bash
+src/
+├── components/
+│   └── Button.jsx
+├── pages/
+│   └── Home.jsx
+├── App.jsx
+└── index.js
+```
+
+---
+
+## 🚀 进阶建议
+
+- 学习 React Router 进行页面跳转
+- 使用 Redux 或 Zustand 管理状态
+- 尝试使用 TypeScript 重构项目
+- 探索 Next.js 实现 SSR
+
+---
+
+## 📚 参考资料
+
+- [React 官方文档](https://react.dev/)
+- [React Hooks 教程](https://reactjs.org/docs/hooks-intro.html)
+- [Awesome React 资源集合](https://github.com/enaqx/awesome-react)

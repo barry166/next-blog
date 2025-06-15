@@ -1,6 +1,8 @@
 import { format, parseISO } from 'date-fns'
 import { allPosts } from 'content-collections'
 import { MDXContent } from '@content-collections/mdx/react'
+import LazyGiscusComments from '@/components/comments/LazyGiscusComments'
+import { giscusConfig } from '@/config/giscus'
 
 export const generateStaticParams = async () => allPosts.map((post) => ({ slug: post.slug }))
 
@@ -31,6 +33,20 @@ const PostLayout = async ({ params }: { params: Promise<{ slug: string }> }) => 
         <div className="prose prose-gray prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-foreground prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl prose-p:text-text-secondary prose-strong:text-foreground prose-pre:bg-gray-900 dark:prose-pre:bg-gray-800 prose-pre:text-gray-100 prose-code:text-pink-600 dark:prose-code:text-pink-400 prose-code:bg-secondary dark:prose-code:bg-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-a:text-link dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-l-border prose-blockquote:text-text-secondary">
           <MDXContent code={post.mdx} />
         </div>
+
+        {/* 评论区分隔线 */}
+        <div className="mt-16 mb-8">
+          <div className="border-t border-border"></div>
+        </div>
+
+        {/* 评论区 */}
+        <section className="mt-12">
+          <h2 className="text-2xl font-bold text-foreground mb-6">评论</h2>
+          <LazyGiscusComments
+            config={giscusConfig}
+            className="mt-6"
+          />
+        </section>
       </article>
     </div>
   )

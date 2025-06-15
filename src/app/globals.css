@@ -33,6 +33,26 @@
   --button-text: #374151;
 }
 
+/* Giscus 评论系统样式 */
+.giscus-container {
+  @apply mt-8;
+}
+
+.giscus-container .giscus {
+  @apply w-full;
+}
+
+/* 自定义 Giscus 主题适配 */
+.giscus-frame {
+  border-radius: 0.5rem;
+  border: 1px solid rgb(var(--border));
+}
+
+/* 深色模式下的评论区样式调整 */
+.dark .giscus-container {
+  color-scheme: dark;
+}
+
 .dark {
   /* 基础颜色 */
   --background: #0a0a0a;
